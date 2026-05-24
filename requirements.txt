@@ -12,3 +12,4 @@ ruff
 scikit-learn
 tqdm
 typer
+plotly
