@@ -28,10 +28,11 @@ dependencies = [
     "python-dotenv",
     "ruff",
     "scikit-learn",
+    "streamlit",
     "tqdm",
     "typer",
 ]
-requires-python = "==3.12.9"
+requires-python = ">=3.12"
 
 
 [tool.ruff]
