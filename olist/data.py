@@ -125,8 +125,72 @@ def aggregate_items(items: pd.DataFrame) -> pd.DataFrame:
             n_items=("order_item_id", "count"),
             total_price=("price", "sum"),
             total_freight=("freight_value", "sum"),
-            seller_id=("seller_id", "first"),  # primary seller
+            seller_id=("seller_id", "first"),
+            product_id=("product_id", "first"),  # ← add this line
         )
         .reset_index()
     )
     return agg
+
+    
+
+def build_master(
+    orders: pd.DataFrame,
+    customers: pd.DataFrame,
+    items_agg: pd.DataFrame,
+    payments_agg: pd.DataFrame,
+    reviews: pd.DataFrame,
+    products: pd.DataFrame,
+    sellers: pd.DataFrame,
+    geo: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Merge all cleaned tables into one analysis-ready DataFrame.
+    One row = one delivered order.
+    """
+    df = orders.copy()
+
+    df = df.merge(
+        customers[[
+            "customer_id", "customer_state",
+            "customer_city", "customer_zip_code_prefix"
+        ]],
+        on="customer_id",
+        how="left"
+    )
+    df = df.merge(items_agg, on="order_id", how="left")
+    df = df.merge(payments_agg, on="order_id", how="left")
+
+    reviews_slim = reviews[["order_id", "review_score", "review_comment_message"]].copy()
+    reviews_slim["is_bad_review"] = reviews_slim["review_score"] <= 2
+    df = df.merge(reviews_slim, on="order_id", how="left")
+
+    df = df.merge(
+        sellers[["seller_id", "seller_state", "seller_zip_code_prefix"]],
+        on="seller_id",
+        how="left"
+    )
+    df = df.merge(
+        products[["product_id", "product_category_name_english", "product_weight_g"]],
+        on="product_id",
+        how="left"
+    )
+    df = df.merge(
+        geo.rename(columns={
+            "zip_prefix": "customer_zip_code_prefix",
+            "lat": "customer_lat",
+            "lng": "customer_lng"
+        }),
+        on="customer_zip_code_prefix",
+        how="left"
+    )
+
+    return df.reset_index(drop=True)
+
+def save_master(df: pd.DataFrame) -> None:
+    """Save master DataFrame to parquet."""
+    INTERIM_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    path = INTERIM_DATA_DIR / "olist_master.parquet"
+    df.to_parquet(path, index=False)
+    size_mb = path.stat().st_size / 1024 / 1024
+    print(f"Saved: {path}  ({size_mb:.1f} MB)")    
