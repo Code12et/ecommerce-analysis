@@ -162,7 +162,7 @@ def build_master(
     df = df.merge(payments_agg, on="order_id", how="left")
 
     reviews_slim = reviews[["order_id", "review_score", "review_comment_message"]].copy()
-    reviews_slim["is_bad_review"] = reviews_slim["review_score"] <= 2
+    reviews_slim["is_bad_review"] = reviews_slim["review_score"].le(2)
     df = df.merge(reviews_slim, on="order_id", how="left")
 
     df = df.merge(
@@ -184,6 +184,8 @@ def build_master(
         on="customer_zip_code_prefix",
         how="left"
     )
+
+    df = df.drop(columns=["state"], errors="ignore")  # ← drop duplicate state col
 
     return df.reset_index(drop=True)
 
