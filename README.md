@@ -99,8 +99,16 @@ streamlit run app.py
 | `make test` | Run unit tests |
 | `make lint` | Lint with ruff |
 | `make format` | Auto-format code |
-| `streamlit run app.py` | Launch interactive dashboard |
+| `streamlit run app.py` | Launch dashboard locally |
 | `jupyter notebook` | Open analysis notebooks |
+| `make dashboard` | Open deployed Streamlit dashboard |
+
+---
+
+## Deployed Dashboard
+
+Access the live interactive dashboard:  
+[ecommerce-analysis-n5iayas862de9z9lhkddls.streamlit.app](https://ecommerce-analysis-n5iayas862de9z9lhkddls.streamlit.app/)
 
 ---
 
